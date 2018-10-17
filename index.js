@@ -2,10 +2,15 @@ const puppeteer = require("puppeteer");
 const settings = require("./settings.json");
 const readline = require("readline")
 
-puppeteer.launch({
+config = {
     headless: false,
     args: [`--window-size=${settings.width},${settings.height}`]
-}).then(async browser => {
+};
+
+if (settings.executablePath)
+    config.executablePath = settings.executablePath;
+
+puppeteer.launch(config).then(async browser => {
     browser.on("disconnected", error);
     const {sites} = settings;
 
