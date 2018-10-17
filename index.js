@@ -21,8 +21,7 @@ puppeteer.launch({
     
     //Create prompt
     rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
+        input: process.stdin
     })
     rl.prompt('>');
     rl.on('line', inpuHandler)
@@ -32,20 +31,18 @@ puppeteer.launch({
     let commands = {};
     
     commands.start = (args) => new Promise ((resolve, reject) => {
-        console.log("Starting rotation");
+        console.log("Starting rotation\n");
 
         let index = 0;
         interval = setInterval(() => {
             browser.pages().then(pages => {
                 pages[index].bringToFront()
-                .catch(error)
         
                 index++;
                 if (index >= pages.length)
                     index = 0;
         
                 pages[index].reload()
-                .catch(error)
             });
         }, settings.interval)
     
@@ -53,30 +50,49 @@ puppeteer.launch({
     });
 
     commands.pause = (args) => new Promise((resolve, reject) => {
-        console.log("Pausing rotation");
+        console.log("Pausing rotation\n");
         clearInterval(interval);
 
         resolve();
-    })
+    });
 
     commands.exit = (args) => new Promise((resolve, reject) => {
         process.exit();
-    })    
+    }); 
+
+    commands.view = (args) => new Promise((resolve, reject) => {
+
+        if (args.length < 2)
+            return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"));
+        
+        for (let i = 0; i < args.length; i++) {
+            if(isNaN(args[i]))
+                return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"))
+        }
+
+        browser.pages().then(pages => {
+            pages.forEach(p => p.setViewport({width:parseInt(args[0]), height:parseInt(args[1])}));
+            resolve();
+        });
+    });
+
     function inpuHandler(line) {
         let args = line.split(/\s/g);
-        let cmd = args.splice(0,1)[0]
+        args = args.map(x => x.trim());
+        let cmd = args.splice(0,1)[0];
+
 
         if (commands[cmd]) {
-            commands[cmd]().then(() => rl.prompt(">"))
+            commands[cmd](args).then(() => rl.prompt(">"))
         } else {
             console.log("Command not found");
-            rl.prompt(">")
+            rl.prompt(">");
         }
     }
     
 })
 
 function error(e) {
-    console.log("\n An error occured!!");
+    console.log("\nAn error occured!!");
     process.exit(1);
 }

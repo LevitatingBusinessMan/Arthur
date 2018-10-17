@@ -3,8 +3,8 @@
     "height": 768,
     "interval": 5000,
     "sites":[
-        "https://trello.com/b/rpCewUOX/subaru",
-        "https://sentry.io/rein-fernhout/kirito/",
-        "http:/corndog.io"
+        "http:/corndog.io",
+        "https://sentry.io/rein-fernhout/lavalink/",
+        "https://trello.com/b/rpCewUOX/subaru"
     ]
 }
