@@ -10,7 +10,7 @@ program
 
 config = {
     headless: false,
-    args: [`--window-size=${settings.width},${settings.height}`]
+    args: [`--window-size=${settings.width},${settings.height}`, "--disable-infobars"]
 };
 
 if (program.fullscreen)
@@ -32,7 +32,8 @@ puppeteer.launch(config).then(async browser => {
     });
     
     //Close initial page
-    (await browser.pages())[0].close()
+    if (sites.length)
+        (await browser.pages())[0].close()
     
     //Create prompt
     rl = readline.createInterface({
