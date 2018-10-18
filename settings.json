@@ -1,7 +1,6 @@
 {
     "width": 1366,
     "height": 768,
-    "interval": 5000,
     "executablePath": null,
     "sites":[
         "http:/corndog.io",

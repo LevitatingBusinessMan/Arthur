@@ -49,7 +49,11 @@ puppeteer.launch(config).then(async browser => {
     let commands = {};
     
     commands.rotate = (args) => new Promise ((resolve, reject) => {
-        console.log("Starting rotation");
+
+        if (!args.length || isNaN(args[0]))
+            resolve(console.log("\nPlease use the syntax\n>front %tab_index%\n"));
+
+        console.log(`Starting rotation with interval: ${args[0]}ms`);
 
         let index = 0;
         clearInterval(interval);
@@ -63,7 +67,7 @@ puppeteer.launch(config).then(async browser => {
         
                 pages[index].reload()
             });
-        }, settings.interval)
+        }, args[0])
     
         resolve();
     });
