@@ -26,6 +26,7 @@ puppeteer.launch(config).then(async browser => {
     //Open pages
     await sites.forEach(async url => {
         const p = await browser.newPage();
+        p.waitForNavigation( {timeout: 0});
         p.goto(url);
         p.setViewport(settings);
     });
@@ -46,7 +47,7 @@ puppeteer.launch(config).then(async browser => {
 
     let commands = {};
     
-    commands.start = (args) => new Promise ((resolve, reject) => {
+    commands.rotate = (args) => new Promise ((resolve, reject) => {
         console.log("Starting rotation");
 
         let index = 0;
@@ -120,6 +121,7 @@ puppeteer.launch(config).then(async browser => {
             resolve(console.log("Please only use full urls"))
 
         else browser.newPage().then(p => {
+            p.waitForNavigation( {timeout: 0});
             p.goto(args[0]);
             p.setViewport(view);
             resolve();
@@ -149,7 +151,23 @@ puppeteer.launch(config).then(async browser => {
         }
         console.log("\n")
         resolve();
-    })
+    });
+    
+    commands.front = (args) => new Promise(async (resolve, reject) => {
+        if (!args.length || isNaN(args[0]))
+            resolve(console.log("\nPlease use the syntax\n>front %tab_index%\n"));
+        
+            else browser.pages().then(pages => {
+                const index = args[0]-1;
+
+                if (!pages[index])
+                    return resolve(console.log("Invalid tab index!\n"));
+                
+                console.log(`Bringing page ${args[0]}:${pages[index].url()} to front`)
+                pages[index].bringToFront();
+                resolve();
+        });
+    });
 
     function inpuHandler(line) {
         let args = line.split(/\s/g);
