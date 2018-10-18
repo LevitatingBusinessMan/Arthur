@@ -8,8 +8,6 @@ program
     .option('-f, --fullscreen', 'Start in fullscreen')
     .parse(process.argv)
 
-console.log(program.fullscreen)
-
 config = {
     headless: false,
     args: [`--window-size=${settings.width},${settings.height}`]
@@ -48,7 +46,7 @@ puppeteer.launch(config).then(async browser => {
     let commands = {};
     
     commands.start = (args) => new Promise ((resolve, reject) => {
-        console.log("Starting rotation\n");
+        console.log("Starting rotation");
 
         let index = 0;
         interval = setInterval(() => {
@@ -67,7 +65,7 @@ puppeteer.launch(config).then(async browser => {
     });
 
     commands.pause = (args) => new Promise((resolve, reject) => {
-        console.log("Pausing rotation\n");
+        console.log("Pausing rotation");
         clearInterval(interval);
 
         resolve();
@@ -79,18 +77,23 @@ puppeteer.launch(config).then(async browser => {
 
     commands.view = (args) => new Promise((resolve, reject) => {
 
-        if (args.length < 2)
-            return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"));
-        
-        for (let i = 0; i < args.length; i++) {
-            if(isNaN(args[i]))
-                return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"))
+        if (args.length < 2) {
+            browser.pages().then(pages => {
+                console.log("resetting viewport")
+                pages.forEach(p => p.setViewport(settings));
+                resolve();
+            });
+        } else {
+            for (let i = 0; i < args.length; i++) {
+                if(isNaN(args[i]))
+                    return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"))
+            }
+    
+            browser.pages().then(pages => {
+                pages.forEach(p => p.setViewport({width:parseInt(args[0]), height:parseInt(args[1])}));
+                resolve();
+            });
         }
-
-        browser.pages().then(pages => {
-            pages.forEach(p => p.setViewport({width:parseInt(args[0]), height:parseInt(args[1])}));
-            resolve();
-        });
     });
 
     function inpuHandler(line) {
