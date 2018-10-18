@@ -1,11 +1,22 @@
-const puppeteer = require("puppeteer");
-const settings = require("./settings.json");
-const readline = require("readline")
+const puppeteer = require("puppeteer"),
+settings = require("./settings.json"),
+readline = require("readline"),
+program = require("commander");
+
+program
+    .version("0.1.0")
+    .option('-f, --fullscreen', 'Start in fullscreen')
+    .parse(process.argv)
+
+console.log(program.fullscreen)
 
 config = {
     headless: false,
     args: [`--window-size=${settings.width},${settings.height}`]
 };
+
+if (program.fullscreen)
+    config.args.push("--start-fullscreen")
 
 if (settings.executablePath)
     config.executablePath = settings.executablePath;
@@ -26,7 +37,8 @@ puppeteer.launch(config).then(async browser => {
     
     //Create prompt
     rl = readline.createInterface({
-        input: process.stdin
+        input: process.stdin,
+        output: process.stdout
     })
     rl.prompt('>');
     rl.on('line', inpuHandler)

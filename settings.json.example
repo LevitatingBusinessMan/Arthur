@@ -1,0 +1,11 @@
+{
+    "width": 800,
+    "height": 600,
+    "interval": 10000,
+    "executablePath": null,
+    "sites":[
+        "http:/corndog.io",
+        "https://sentry.io/rein-fernhout/lavalink/",
+        "https://trello.com/b/rpCewUOX/subaru"
+    ]
+}
