@@ -42,6 +42,7 @@ puppeteer.launch(config).then(async browser => {
     rl.on('line', inpuHandler)
     
     let interval;
+    let view = {width: settings.width, height: settings.height};
 
     let commands = {};
     
@@ -49,6 +50,7 @@ puppeteer.launch(config).then(async browser => {
         console.log("Starting rotation");
 
         let index = 0;
+        clearInterval(interval);
         interval = setInterval(() => {
             browser.pages().then(pages => {
                 pages[index].bringToFront()
@@ -79,22 +81,75 @@ puppeteer.launch(config).then(async browser => {
 
         if (args.length < 2) {
             browser.pages().then(pages => {
-                console.log("resetting viewport")
-                pages.forEach(p => p.setViewport(settings));
+                console.log("resetting viewport");
+                view = {width: settings.width, height: settings.height};
+                pages.forEach(p => p.setViewport(view));
                 resolve();
             });
         } else {
             for (let i = 0; i < args.length; i++) {
                 if(isNaN(args[i]))
-                    return resolve(console.log("\nPlease use the syntax\n>view %width% %height%\n"))
+                    return resolve(console.log("\nPlease use the syntax\nview %width% %height%\n"))
             }
     
             browser.pages().then(pages => {
-                pages.forEach(p => p.setViewport({width:parseInt(args[0]), height:parseInt(args[1])}));
+                view = {width:parseInt(args[0]), height:parseInt(args[1])};
+                pages.forEach(p => p.setViewport(view));
                 resolve();
             });
         }
     });
+
+    commands.pages = (args) => new Promise(async (resolve, reject) => {
+        const pages = await browser.pages();
+        for (let i = 0; i < pages.length; i++) {
+            const p = pages[i];
+            const url = p.url();
+
+            console.log(`Tab[${i+1}] ${url}`)
+        }
+        resolve();
+    });
+
+    const url_regex = /(((http)|(https)):\/\/)?(\w+:)?([a-z0-9@]+\.)+[a-z0-9]+(:\d+)?((\/[\w()?=&#-%-\S]+)+)?/g;
+    commands.add = (args) => new Promise(async (resolve, reject) => {
+        if (!args.length)
+            resolve(console.log("\nPlease use the syntax\nadd %url%\n"));
+        
+        else if (!(url_regex).test(args[0]))
+            resolve(console.log("Please only use full urls"))
+
+        else browser.newPage().then(p => {
+            p.goto(args[0]);
+            p.setViewport(view);
+            resolve();
+        });
+    });
+
+    commands.close = (args) => new Promise(async (resolve, reject) => {
+        if (!args.length || isNaN(args[0]))
+            resolve(console.log("\nPlease use the syntax\n>close %tab_index%\n"));
+        
+            else browser.pages().then(pages => {
+                const index = args[0]-1;
+
+                if (!pages[index])
+                    return resolve(console.log("Invalid tab index!\n"));
+                
+                console.log(`Closing page ${args[0]}:${pages[index].url()}`)
+                pages[index].close();
+                resolve();
+        });
+    });
+
+    commands.help = (args) => new Promise(async (resolve, reject) => {
+        console.log("\nCommands:")
+        for (name in commands) {
+            console.log(name)
+        }
+        console.log("\n")
+        resolve();
+    })
 
     function inpuHandler(line) {
         let args = line.split(/\s/g);
